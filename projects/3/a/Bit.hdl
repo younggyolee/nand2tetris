@@ -13,5 +13,7 @@ CHIP Bit {
     OUT out;
 
     PARTS:
-    //// Replace this comment with your code.
+    Mux(a=prevState, b=in, sel=load, out=curState);
+    DFF(in=curState, out=prevState);
+    Or(a=prevState, b=false, out=out);
 }
