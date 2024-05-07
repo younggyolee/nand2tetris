@@ -14,8 +14,8 @@ CHIP RAM16K {
 
     PARTS:
    // get ram address
-    And(a=address[10], b=true, out=ramAddress0);
-    And(a=address[11], b=true, out=ramAddress1);
+    And(a=address[12], b=true, out=ramAddress0);
+    And(a=address[13], b=true, out=ramAddress1);
     And16(
         a=true,
         b[0]=ramAddress0,
