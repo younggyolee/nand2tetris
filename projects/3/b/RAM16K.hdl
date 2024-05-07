@@ -13,5 +13,65 @@ CHIP RAM16K {
     OUT out[16];
 
     PARTS:
-    //// Replace this comment with your code.
+   // get ram address
+    And(a=address[10], b=true, out=ramAddress0);
+    And(a=address[11], b=true, out=ramAddress1);
+    And16(
+        a=true,
+        b[0]=ramAddress0,
+        b[1]=ramAddress1,
+        out[0..1]=ramAddress
+    );
+    DMux4Way(
+        in=load,
+        sel=ramAddress,
+        a=load0,
+        b=load1,
+        c=load2,
+        d=load3
+    );
+
+    // get register address
+    And(a=address[0], b=true, out=registerAddress0);
+    And(a=address[1], b=true, out=registerAddress1);
+    And(a=address[2], b=true, out=registerAddress2);
+    And(a=address[3], b=true, out=registerAddress3);
+    And(a=address[4], b=true, out=registerAddress4);
+    And(a=address[5], b=true, out=registerAddress5);
+    And(a=address[6], b=true, out=registerAddress6);
+    And(a=address[7], b=true, out=registerAddress7);
+    And(a=address[8], b=true, out=registerAddress8);
+    And(a=address[9], b=true, out=registerAddress9);
+    And(a=address[10], b=true, out=registerAddress10);
+    And(a=address[11], b=true, out=registerAddress11);
+    And16(
+        a=true,
+        b[0]=registerAddress0,
+        b[1]=registerAddress1,
+        b[2]=registerAddress2,
+        b[3]=registerAddress3,
+        b[4]=registerAddress4,
+        b[5]=registerAddress5,
+        b[6]=registerAddress6,
+        b[7]=registerAddress7,
+        b[8]=registerAddress8,
+        b[9]=registerAddress9,
+        b[10]=registerAddress10,
+        b[11]=registerAddress11,
+        out[0..11]=registerAddress
+    );
+
+    RAM4K(in=in, load=load0, address=registerAddress, out=out0);
+    RAM4K(in=in, load=load1, address=registerAddress, out=out1);
+    RAM4K(in=in, load=load2, address=registerAddress, out=out2);
+    RAM4K(in=in, load=load3, address=registerAddress, out=out3);
+
+    Mux4Way16(
+        a=out0,
+        b=out1,
+        c=out2,
+        d=out3,
+        sel=ramAddress,
+        out=out
+    );
 }
