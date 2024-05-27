@@ -51,6 +51,9 @@ CHIP Memory {
     ALU(x[0..14]=address, y=keyboardBase, nx=true, f=true, no=true, out=thirdAluOut, zr=isAddressKeyboard, ng=thirdAluNg);
     Keyboard(out=keyboardOut);
 
+    // I was doing ALU wrong. x - y should be `nx=true, f=true, no=true`, not `ny=true, f=true`.
+    // I should've read the API doc more carefully!!
+
 
     // if address is in the range 0x4000-0x5FFF, then access screen memory map
     // when accessing the memory map, use address = address - 0x4000
