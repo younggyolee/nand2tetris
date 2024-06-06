@@ -41,7 +41,7 @@ CHIP CPU {
     // if instruction[15] == 0 => aRegLoad = 1
     // if instruction[15] == 1 && instruction[5] == 1 => aRegLoad=1
 
-    And16(a=instruction[15], b=true, out=cIns);
+    And(a=instruction[15], b=true, out=cIns);
     Not(in=cIns, out=aIns);
     And(a=cIns, b=instruction[5], out=isDestA);
     And(a=cIns, b=instruction[4], out=isDestD);
@@ -58,7 +58,7 @@ CHIP CPU {
 
     // TODO: implement PC
 
-    ALU(x=dRegOut, y=aOrMOut, zx=c[11], nx=c[10], zy=c[9], ny=c[8], f=c[7], no=c[6], out=aluOut, zr=zr, ng=ng);
+    ALU(x=dRegOut, y=aOrMOut, zx=instruction[11], nx=instruction[10], zy=instruction[9], ny=instruction[8], f=instruction[7], no=instruction[6], out=aluOut, zr=zr, ng=ng);
 
     // jjj
     DMux8Way(sel[2]=instruction[2], sel[1]=instruction[1], sel[0]=instruction[0], in=true,
@@ -110,11 +110,12 @@ CHIP CPU {
         out=jump
     );
 
-    Not(in=jump, out=notJump)
+    Not(in=jump, out=notJump);
 
-    PC(in=aRegOut, load=jump, inc=notJump, reset=reset, out=pc);
+    PC(in=aRegOut, load=jump, inc=notJump, reset=reset, out=pcOut);
+    And16(a=pcOut, b=true, out[0..14]=pc);
 
-    And16(a=true, b=aRegOut, out=addressM);
+    And16(a=true, b=aRegOut, out[0..14]=addressM);
 
-    And16(a=aluOut, b=true, c=outM);
+    And16(a=aluOut, b=true, out=outM);
 }
