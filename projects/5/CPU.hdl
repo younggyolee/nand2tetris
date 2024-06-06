@@ -31,6 +31,90 @@ CHIP CPU {
         addressM[15],    // Address in data memory (of M)
         pc[15];          // address of next instruction
 
+    // ARegister, DRegister and PC should be used 
     PARTS:
-	//// Replace this comment with your code.
+
+    // TODO: aluOut from ALU
+    Mux16(a[0..14]=instruction[0..14], b=aluOut, sel=instruction[15], out=aRegInput);
+
+    // TODO: calculate aRegLoad
+    // if instruction[15] == 0 => aRegLoad = 1
+    // if instruction[15] == 1 && instruction[5] == 1 => aRegLoad=1
+
+    And16(a=instruction[15], b=true, out=cIns);
+    Not(in=cIns, out=aIns);
+    And(a=cIns, b=instruction[5], out=isDestA);
+    And(a=cIns, b=instruction[4], out=isDestD);
+    And(a=cIns, b=instruction[3], out=writeM);
+
+    Or(a=aIns, b=isDestA, out=aRegLoad);
+    
+    ARegister(in=aRegInput, load=aRegLoad, out=aRegOut);
+
+    Mux16(a=aRegOut, b=inM, sel=instruction[12], out=aOrMOut);
+
+    // TODO: aluOut from ALU
+    DRegister(in=aluOut, load=isDestD, out=dRegOut);
+
+    // TODO: implement PC
+
+    ALU(x=dRegOut, y=aOrMOut, zx=c[11], nx=c[10], zy=c[9], ny=c[8], f=c[7], no=c[6], out=aluOut, zr=zr, ng=ng);
+
+    // jjj
+    DMux8Way(sel[2]=instruction[2], sel[1]=instruction[1], sel[0]=instruction[0], in=true,
+        a=dMuxA, // no jump
+        b=dMuxB, // if comp > 0 jump
+        c=dMuxC, // if comp == 0 jump
+        d=dMuxD, // if comp >= 0 jump
+        e=dMuxE, // if comp < 0 jump
+        f=dMuxF, // if comp != 0 jump
+        g=dMuxG, // if comp <= 0 jump
+        h=dMuxH // unconditional jump
+    );
+
+    // comp > 0  <=> ng == 0
+    // comp == 0 <=> zr == 1
+    // comp >= 0 <=> ng == 0 OR zr == 1
+    // comp < 0  <=> ng == 1
+    // comp != 0 <=> zr == 0
+    // comp <= 0 <=> ng == 1 OR zr == 1
+    And(a=dMuxA, b=false, out=jumpA);
+
+    Not(in=ng, out=notNg);
+    And(a=dMuxB, b=notNg, out=jumpB);
+
+    And(a=dMuxC, b=zr, out=jumpC);
+
+    Or(a=notNg, b=zr, out=GTE);
+    And(a=dMuxD, b=GTE, out= jumpD);
+
+    And(a=dMuxE, b=ng, out=jumpE);
+
+    Not(in=zr, out=notZr);
+    And(a=dMuxF, b=notZr, out=jumpF);
+
+    Or(a=ng, b=zr, out=LTE);
+    And(a=dMuxG, b=LTE, out=jumpG);
+
+    And(b=dMuxH, a=true, out=jumpH);
+
+    Or8Way(
+        in[0]=jumpA,
+        in[1]=jumpB,
+        in[2]=jumpC,
+        in[3]=jumpD,
+        in[4]=jumpE,
+        in[5]=jumpF,
+        in[6]=jumpG,
+        in[7]=jumpH,
+        out=jump
+    );
+
+    Not(in=jump, out=notJump)
+
+    PC(in=aRegOut, load=jump, inc=notJump, reset=reset, out=pc);
+
+    And16(a=true, b=aRegOut, out=addressM);
+
+    And16(a=aluOut, b=true, c=outM);
 }
