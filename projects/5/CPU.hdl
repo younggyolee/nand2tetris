@@ -107,8 +107,10 @@ CHIP CPU {
         in[5]=jumpF,
         in[6]=jumpG,
         in[7]=jumpH,
-        out=jump
+        out=jumpFromC
     );
+
+    And(a=jumpFromC, b=cIns, out=jump);
 
     Not(in=jump, out=notJump);
 
