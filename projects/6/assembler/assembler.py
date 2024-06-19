@@ -1,30 +1,31 @@
 # read file
-def read_text_file(file_name):
+def read_text_file(file_path):
     try:
-        with open(file_name, 'r') as file:
+        with open(file_path, 'r') as file:
             content = file.read()
             return content
     except FileNotFoundError:
-        print(f"The file {file_name} was not found.")
+        print(f"The file {file_path} was not found.")
     except Exception as e:
         print(f"An error occurred while reading the file: {e}")
 
-file_name = 'Add.asm'
-text = read_text_file(file_name)
+file_path = '../add/Add.asm'
+text = read_text_file(file_path)
 
 # parser
 class Parser:
     def __init__(self, text):
         text = text.replace(' ', '') # removes all white spaces
         lines = text.split('\n')
-        lines = [x for x in lines if len(x) > 0] # removes empty lines
 
         # remove comments
         for i, line in enumerate(lines):
             comment_index = line.find('//')
             if comment_index == -1:
-                next
+                continue
             lines[i] = line[:comment_index]
+
+        lines = [x for x in lines if len(x) > 0] # removes empty lines
 
         self.lines = lines
         self.current_line_number = 0
