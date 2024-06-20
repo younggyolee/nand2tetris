@@ -84,19 +84,18 @@ class Parser:
 
         equal_sign_index = self.current_line().find('=')
         semi_colon_index = self.current_line().find(';')
-        
+
         start = max(equal_sign_index + 1, 0)
         end = len(self.current_line()) if semi_colon_index == -1 else semi_colon_index
 
         return self.current_line()[start : end]
-        
 
     def jump(self):
         # should return the jump mnemonic out of 8 possibilities
         if self.command_type() != Parser.COMMAND_TYPES['C_COMMAND']:
             raise Exception
 
-        semi_colon_index = self.current_line().find(':')
+        semi_colon_index = self.current_line().find(';')
         if semi_colon_index == -1:
             return None
         else:
@@ -113,7 +112,7 @@ class Code:
                 return '001'
             case 'D':
                 return '010'
-            case 'DM':
+            case 'DM' | 'MD':
                 return '011'
             case 'A':
                 return '100'
@@ -123,6 +122,8 @@ class Code:
                 return '110'
             case 'ADM':
                 return '111'
+            case _:
+                raise Exception
 
     @classmethod
     def comp(cls, mnemonic):
@@ -168,6 +169,8 @@ class Code:
                 c = '000000'
             case 'D|A' | 'D|M':
                 c = '010101'
+            case _:
+                raise Exception
         return a + c
 
     @classmethod
@@ -189,6 +192,8 @@ class Code:
                 return '110'
             case 'JMP':
                 return '111'
+            case _:
+                raise Exception
 
 class SymbolTable:
     def predefined(self):
@@ -214,12 +219,13 @@ class SymbolTable:
 
     def add_entry(self, symbol: str, address: int):
         self.hash_table[symbol] = address
+        return True
 
     def contains(self, symbol: str):
-        symbol in self.hash_table
+        return symbol in self.hash_table
 
     def get_address(self, symbol):
-        self.hash_table[symbol]
+        return self.hash_table[symbol]
 
 # save file
 
@@ -229,10 +235,10 @@ class BinaryWriter:
 
     def add_line(self, text):
         self.lines.append(text)
-    
+
     def lines(self):
         self.lines
-    
+
     def write_to_file(self, filename):
         with open(filename, 'w') as file:
             # Loop through each element in the array
@@ -256,7 +262,7 @@ def first_pass(text, symbol_table: SymbolTable):
 
         parser.advance()
 
-def second_pass(text, symbol_table: SymbolTable):
+def second_pass(text, symbol_table: SymbolTable, file_path):
     binary_writer = BinaryWriter()
     parser = Parser(text)
     address_for_variable = 16
@@ -279,28 +285,29 @@ def second_pass(text, symbol_table: SymbolTable):
                         address_for_variable += 1
 
                 bin_line = format(int(symbol), '#018b')[2:]
+                binary_writer.add_line(bin_line)
             case 'C_COMMAND':
                 dest = Code.dest(parser.dest())
                 comp = Code.comp(parser.comp())
                 jump = Code.jump(parser.jump())
                 bin_line = '111' + comp + dest + jump
-            case 'L_COMMAND':
-                symbol = parser.symbol()
-                bin_line = ''
+                binary_writer.add_line(bin_line)
+            # case 'L_COMMAND':
+            #     symbol = parser.symbol()
+            #     bin_line = ''
 
-        print(parser.command_type())
-        binary_writer.add_line(bin_line)
         parser.advance()
 
-    binary_writer.write_to_file(filename + '.hack')
+    binary_writer.write_to_file(file_path.replace('.asm', '') + '.hack')
 
 def run(file_path):
     symbol_table = SymbolTable()
     text = read_text_file(file_path)
     first_pass(text, symbol_table)
-    second_pass(text, symbol_table)
+    # print(symbol_table.hash_table)
+    second_pass(text, symbol_table, file_path)
 
-for filename in [
+for file_path in [
     '../add/Add.asm',
     '../max/Max.asm',
     '../max/MaxL.asm',
@@ -309,4 +316,4 @@ for filename in [
     '../rect/Rect.asm',
     '../rect/RectL.asm'
 ]:
-    run(filename)
+    run(file_path)
