@@ -61,6 +61,9 @@ class Parser:
             end = len(self.current_line()) - 1
         return self.current_line()[1 : end]
 
+    def is_symbol_decimal(self):
+        return self.symbol(self).isdigit()
+
     # translates assembly language into mnemonic
     def dest(self):
         # should return one of [null, M, D, DM, A, AM, AD, ADM]
@@ -80,7 +83,7 @@ class Parser:
             raise Exception
 
         equal_sign_index = self.current_line().find('=')
-        semi_colon_index = self.current_line().find(':')
+        semi_colon_index = self.current_line().find(';')
         
         start = max(equal_sign_index + 1, 0)
         end = len(self.current_line()) if semi_colon_index == -1 else semi_colon_index
@@ -127,7 +130,7 @@ class Code:
             a = '1'
         else:
             a = '0'
-        print(mnemonic, len(mnemonic))
+        c = None
         match mnemonic:
             case '0':
                 c = '101010'
@@ -188,8 +191,26 @@ class Code:
                 return '111'
 
 class SymbolTable:
+    def predefined(self):
+        hash_table = {
+            'SCREEN': 16384,
+            'KBD': 24576,
+            'SP': 0,
+            'LCL': 1,
+            'ARG': 2,
+            'THIS': 3,
+            'THAT': 4
+        }
+
+        # R0~R15
+        for i in range(16):
+            key = 'R%d' % i
+            hash_table[key] = i
+
+        return hash_table
+
     def __init__(self):
-        self.hash_table = {}
+        self.hash_table = self.predefined()
 
     def add_entry(self, symbol: str, address: int):
         self.hash_table[symbol] = address
@@ -219,32 +240,73 @@ class BinaryWriter:
                 # Write the element to the file followed by a newline
                 file.write(element + '\n')
 
-def run(filename):
-    file_path = '../add/%s.asm' % filename
-    text = read_text_file(file_path)
+def first_pass(text, symbol_table: SymbolTable):
+    # handle symbols
 
-    binary_writer = BinaryWriter()
-
+    # 2. label symbols (Xxx) => remember
+    line_number = 0
     parser = Parser(text)
+    while parser.has_more_commands():
+        if parser.command_type() == 'L_COMMAND':
+            # remember the line number
+            symbol_table.add_entry(parser.symbol(), line_number)
+
+        else:
+            line_number += 1
+
+        parser.advance()
+
+def second_pass(text, symbol_table: SymbolTable):
+    binary_writer = BinaryWriter()
+    parser = Parser(text)
+    address_for_variable = 16
+
     while parser.has_more_commands():
         match parser.command_type():
             case 'A_COMMAND':
+                # 1. predefined symbols = @R0 => replace with predefined values
+                # 2. label symbols = @Xxx => replace with the line number we remember
+                # 3. variable symbols = @i => replace with address, starting from 16
                 symbol = parser.symbol()
-                bin_line = format(int(symbol), '#016b')[2:]
+                if not symbol.isdigit():
+                    if symbol_table.contains(symbol):
+                        # 1. predefined or 2. label
+                        symbol = symbol_table.get_address(symbol)
+                    else:
+                        # 3. variable symbol
+                        symbol_table.add_entry(symbol, address_for_variable)
+                        symbol = address_for_variable
+                        address_for_variable += 1
+
+                bin_line = format(int(symbol), '#018b')[2:]
             case 'C_COMMAND':
-                print(parser.dest())
                 dest = Code.dest(parser.dest())
                 comp = Code.comp(parser.comp())
                 jump = Code.jump(parser.jump())
-                bin_line = '0' + comp + dest + jump
-            # case 'L_COMMAND':
-            #     symbol = parser.symbol()
-            #     bin_line = 
+                bin_line = '111' + comp + dest + jump
+            case 'L_COMMAND':
+                symbol = parser.symbol()
+                bin_line = ''
 
+        print(parser.command_type())
         binary_writer.add_line(bin_line)
         parser.advance()
 
     binary_writer.write_to_file(filename + '.hack')
 
-for filename in ['Add']:
+def run(file_path):
+    symbol_table = SymbolTable()
+    text = read_text_file(file_path)
+    first_pass(text, symbol_table)
+    second_pass(text, symbol_table)
+
+for filename in [
+    '../add/Add.asm',
+    '../max/Max.asm',
+    '../max/MaxL.asm',
+    '../pong/Pong.asm',
+    '../pong/PongL.asm',
+    '../rect/Rect.asm',
+    '../rect/RectL.asm'
+]:
     run(filename)
