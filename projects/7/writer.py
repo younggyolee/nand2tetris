@@ -43,9 +43,10 @@ class Writer:
                 # TODO
                 pass
             case 'temp':
-                self.assign_sp_mem_to_d_val()
-                self.assign_d_val_to_mem(f'{variable + 5}')
-                return
+                pass
+                # self.assign_sp_mem_to_d_val()
+                # self.assign_d_val_to_mem(f'{variable + 5}')
+                # return
             case 'pointer':
                 segment = 'THIS'
 
@@ -56,8 +57,11 @@ class Writer:
                 self.assign_d_val_to_mem('SP')
                 self.incr_pointer('SP')
             else:
-                self.add_line(f'@{segment}')
-                self.add_line('A=M')
+                if variable_type == 'temp':
+                    self.add_line('@5')
+                else:
+                    self.add_line(f'@{segment}')
+                    self.add_line('A=M')
                 for _ in range(variable):
                     self.add_line('A=A+1')
                 self.add_line('D=M')
@@ -65,25 +69,32 @@ class Writer:
                 self.incr_pointer('SP')
 
         elif operation == 'pop':
-            # pop local 2
-            # @SP
-            # A=M
-            # D=M
+            if variable_type.lower() == 'constant':
+                # this shouldn't happen
+                raise NotImplementedError
+            else:
+                # // pop local 2
+                # @SP
+                # A=M
+                # D=M
 
-            # @LCL
-            # A=M
-            # A=A+2
-            # M=D
+                # @LCL
+                # A=M
+                # A=A+2
+                # M=D
 
-            self.decr_pointer('SP')
-            self.assign_sp_mem_to_d_val()
-            self.add_line(f'@{segment}')
-            self.add_line('A=M')
-            for _ in range(variable):
-                self.add_line('A=A+1')
+                self.decr_pointer('SP')
+                self.assign_sp_mem_to_d_val()
+                if variable_type == 'temp':
+                    self.add_line('@5')
+                else:
+                    self.add_line(f'@{segment}')
+                    self.add_line('A=M')
+                for _ in range(variable):
+                    self.add_line('A=A+1')
 
-            self.add_line('M=D')
-            # self.decr_pointer('SP')
+                self.add_line('M=D')
+                # self.decr_pointer('SP')
 
     def handle_arithmetic(self, line, line_number):
         if line in ['neg', 'not']:
