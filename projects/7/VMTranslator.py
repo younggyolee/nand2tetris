@@ -1,4 +1,5 @@
 import sys
+import os
 from processor import Processor
 
 def main():
@@ -10,12 +11,21 @@ def main():
     # Get the filename from the command-line arguments
     filename = sys.argv[1]
 
+    # Split the filename into the directory and the base name
+    directory, basename = os.path.split(filename)
+
+    # Split the base name into the name and the extension
+    name, _ = os.path.splitext(basename)
+
+    # Create a new file path with a different extension (e.g., '.txt')
+    new_extension = '.asm'
+    new_filepath = os.path.join(directory, name + new_extension)
+
     try:
         # Open the file for reading
         with open(filename, 'r') as file:
             content = file.read()
-            file_path_without_ext = filename.split('.')[0]
-            Processor.process_file(content, file_path_without_ext)
+            Processor.process_file(content, new_filepath)
 
     except FileNotFoundError:
         print(f"Error: The file {filename} was not found.")
