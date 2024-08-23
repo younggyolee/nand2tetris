@@ -28,27 +28,26 @@ class Writer:
         variable_type: str = words[1] # constant, local, ...
         variable = int(words[2])
 
-        match variable_type.lower():
-            case 'constant':
-                segment = 'SP'
-            case 'local':
-                segment = 'LCL'
-            case 'argument':
-                segment = 'ARG'
-            case 'this':
-                segment = 'THIS'
-            case 'that':
-                segment = 'THAT'
-            case 'static':
-                # TODO
-                pass
-            case 'temp':
-                pass
-                # self.assign_sp_mem_to_d_val()
-                # self.assign_d_val_to_mem(f'{variable + 5}')
-                # return
-            case 'pointer':
-                segment = 'THIS'
+        if variable_type == 'constant':
+            segment = 'SP'
+        if variable_type == 'local':
+            segment = 'LCL'
+        if variable_type == 'argument':
+            segment = 'ARG'
+        if variable_type == 'this':
+            segment = 'THIS'
+        if variable_type == 'that':
+            segment = 'THAT'
+        if variable_type == 'static':
+            # TODO
+            pass
+        if variable_type == 'temp':
+            pass
+            # self.assign_sp_mem_to_d_val()
+            # self.assign_d_val_to_mem(f'{variable + 5}')
+            # return
+        if variable_type == 'pointer':
+            segment = 'THIS'
 
         if operation == 'push':
             if variable_type.lower() == 'constant':
