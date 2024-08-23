@@ -1,41 +1,4 @@
-# read file
-
-class Reader:
-    def __init__(self):
-        self.vm_text = None
-
-    def read_text_file(self, file_path):
-        try:
-            with open(file_path, 'r') as file:
-                content = file.read()
-                self.vm_text = content
-                print('the file has been read')
-                return True
-        except FileNotFoundError:
-            print(f"The file {file_path} was not found.")
-        except Exception as e:
-            print(f"An error occurred while reading the file: {e}")
-
-class HackWriter:
-    def __init__(self):
-        self.lines = []
-
-    def add_line(self, text):
-        self.lines.append(text)
-
-    def lines(self):
-        self.lines
-
-    def write_to_file(self, filename):
-        with open(filename, 'w') as file:
-            # Loop through each element in the array
-            for element in self.lines:
-                # Write the element to the file followed by a newline
-                file.write(element + '\n')
-
-    def print(self):
-        print(self.lines)
-
+from writer import HackWriter
 
 class Parser:
     def __init__(self, text):
@@ -200,45 +163,3 @@ class Parser:
             hack_writer.add_line('M=D')
 
         self.sp_incr(hack_writer)
-
-
-# file_path = './StackArithmetic/SimpleAdd/SimpleAdd.vm'
-# write_file_name = 'SimpleAdd.asm'
-read_file_path = './StackArithmetic/StackTest/StackTest.vm'
-write_file_name = './StackArithmetic/StackTest/StackTest.asm'
-
-reader = Reader()
-reader.read_text_file(read_file_path)
-parser = Parser(reader.vm_text)
-
-hack_writer = HackWriter()
-
-# initialize ram
-hack_writer.add_line('@256')
-hack_writer.add_line('D=A')
-hack_writer.add_line('@SP')
-hack_writer.add_line('M=D')
-
-while parser.has_more_commands():
-    line = parser.current_line()
-    line_number = parser.current_line_number
-    if parser.current_line_type() == 'stack':
-        # stack
-        parser.handle_stack(line, hack_writer)
-        parser.advance()
-
-    elif parser.current_line_type() == 'arithmetic':
-        # arithmetic
-        parser.handle_arithmetic(line, hack_writer, line_number)
-        parser.advance()
-    else:
-        raise Exception('unknown type')
-
-hack_writer.add_line('(END)')
-hack_writer.add_line('  @END')
-hack_writer.add_line('  0;JMP')
-
-hack_writer.print()
-hack_writer.write_to_file(write_file_name)
-
-
