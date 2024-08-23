@@ -20,7 +20,6 @@ class Writer:
     def print(self):
         print(self.lines)
 
-
     # high level methods
     def handle_stack(self, line):
         words = line.split(' ')
@@ -28,76 +27,25 @@ class Writer:
         variable_type: str = words[1] # constant, local, ...
         variable = int(words[2])
 
-        if variable_type == 'constant':
-            segment = 'SP'
-        elif variable_type == 'local':
-            segment = 'LCL'
-        elif variable_type == 'argument':
-            segment = 'ARG'
-        elif variable_type == 'this':
-            segment = 'THIS'
-        elif variable_type == 'that':
-            segment = 'THAT'
-        elif variable_type == 'static':
-            segment = ''
-            pass
-        elif variable_type == 'temp':
-            pass
-            # self.assign_sp_mem_to_d_val()
-            # self.assign_d_val_to_mem(f'{variable + 5}')
-            # return
-        elif variable_type == 'pointer':
-            segment = 'THIS'
-
         if operation == 'push':
             if variable_type.lower() == 'constant':
                 self.add_line(f'@{variable}')
                 self.add_line('D=A')
-                self.assign_d_val_to_mem('SP')
-                self.incr_pointer('SP')
             else:
-                if variable_type == 'temp':
-                    self.add_line('@5')
-                elif variable_type == 'pointer':
-                    self.add_line(f'@{segment}')
-                else:
-                    self.add_line(f'@{segment}')
-                    self.add_line('A=M')
-                for _ in range(variable):
-                    self.add_line('A=A+1')
+                self.point_to_mem_loc(variable_type, variable)
                 self.add_line('D=M')
-                self.assign_d_val_to_mem('SP')
-                self.incr_pointer('SP')
+            self.assign_d_val_to_mem('SP')
+            self.incr_pointer('SP')
 
         elif operation == 'pop':
             if variable_type.lower() == 'constant':
                 # this shouldn't happen
                 raise NotImplementedError
             else:
-                # // pop local 2
-                # @SP
-                # A=M
-                # D=M
-
-                # @LCL
-                # A=M
-                # A=A+2
-                # M=D
-
                 self.decr_pointer('SP')
                 self.assign_sp_mem_to_d_val()
-                if variable_type == 'temp':
-                    self.add_line('@5')
-                elif variable_type == 'pointer':
-                    self.add_line(f'@{segment}')
-                else:
-                    self.add_line(f'@{segment}')
-                    self.add_line('A=M')
-                for _ in range(variable):
-                    self.add_line('A=A+1')
-
+                self.point_to_mem_loc(variable_type, variable)
                 self.add_line('M=D')
-                # self.decr_pointer('SP')
 
     def handle_arithmetic(self, line, line_number):
         if line in ['neg', 'not']:
@@ -168,6 +116,34 @@ class Writer:
             self.add_line('M=D')
 
         self.incr_pointer('SP')
+
+    def point_to_mem_loc(self, variable_type, variable):
+        segment = self.get_segment(variable_type)
+        if variable_type == 'temp':
+            self.add_line('@5')
+        elif variable_type == 'static':
+            self.add_line('@16')
+        elif variable_type == 'pointer':
+            self.add_line(f'@{segment}')
+        else:
+            self.add_line(f'@{segment}')
+            self.add_line('A=M')
+        for _ in range(variable):
+            self.add_line('A=A+1')
+
+    def get_segment(self, variable_type):
+        hash = {
+            'constant': 'SP',
+            'local': 'LCL',
+            'argument': 'ARG',
+            'this': 'THIS',
+            'that': 'THAT',
+            'static': '',
+            'temp': '',
+            'pointer': 'THIS'
+        }
+
+        return hash[variable_type]
 
     def mark_end(self):
         self.add_line('(END)')
