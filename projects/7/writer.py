@@ -30,23 +30,23 @@ class Writer:
 
         if variable_type == 'constant':
             segment = 'SP'
-        if variable_type == 'local':
+        elif variable_type == 'local':
             segment = 'LCL'
-        if variable_type == 'argument':
+        elif variable_type == 'argument':
             segment = 'ARG'
-        if variable_type == 'this':
+        elif variable_type == 'this':
             segment = 'THIS'
-        if variable_type == 'that':
+        elif variable_type == 'that':
             segment = 'THAT'
-        if variable_type == 'static':
-            # TODO
+        elif variable_type == 'static':
+            segment = ''
             pass
-        if variable_type == 'temp':
+        elif variable_type == 'temp':
             pass
             # self.assign_sp_mem_to_d_val()
             # self.assign_d_val_to_mem(f'{variable + 5}')
             # return
-        if variable_type == 'pointer':
+        elif variable_type == 'pointer':
             segment = 'THIS'
 
         if operation == 'push':
@@ -146,12 +146,12 @@ class Writer:
                 self.add_line('0;JLE')
 
             self.add_line('(EQ{})'.format(line_number))
-            self.assign_minus_one_to_sp_mem(self)
+            self.assign_minus_one_to_sp_mem()
             self.add_line('  @FINISHED{}'.format(line_number))
             self.add_line('  0; JMP')
 
             self.add_line('(NEQ{})'.format(line_number))
-            self.assign_0_to_sp_mem(self)
+            self.assign_0_to_sp_mem()
 
             self.add_line('(FINISHED{})'.format(line_number))
         elif line in ['and', 'or']:
