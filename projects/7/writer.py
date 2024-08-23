@@ -58,6 +58,8 @@ class Writer:
             else:
                 if variable_type == 'temp':
                     self.add_line('@5')
+                elif variable_type == 'pointer':
+                    self.add_line(f'@{segment}')
                 else:
                     self.add_line(f'@{segment}')
                     self.add_line('A=M')
@@ -86,6 +88,8 @@ class Writer:
                 self.assign_sp_mem_to_d_val()
                 if variable_type == 'temp':
                     self.add_line('@5')
+                elif variable_type == 'pointer':
+                    self.add_line(f'@{segment}')
                 else:
                     self.add_line(f'@{segment}')
                     self.add_line('A=M')
