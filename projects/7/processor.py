@@ -12,6 +12,7 @@ class Processor:
         while parser.has_more_commands():
             line = parser.current_line()
             line_number = parser.current_line_number
+            writer.add_line(f'//{line}') # for readability
             if parser.current_line_type() == 'stack':
                 writer.handle_stack(line)
                 parser.advance()
@@ -20,6 +21,7 @@ class Processor:
                 parser.advance()
             else:
                 raise Exception('unknown type')
+            writer.add_line('')
 
         writer.mark_end()
 

@@ -25,35 +25,82 @@ class Writer:
     def handle_stack(self, line):
         words = line.split(' ')
         operation = words[0] # push, pop
-        variable_type = words[1] # constant, local, ...
+        variable_type: str = words[1] # constant, local, ...
         variable = int(words[2])
 
-        if operation == 'push':
-            self.add_line('@{}'.format(variable))
-            self.add_line('D=A')
-            self.assign_d_val_to_sp_mem()
-            self.sp_incr()
-        elif operation == 'pop':
-            # TODO
-            pass
+        match variable_type.lower():
+            case 'constant':
+                segment = 'SP'
+            case 'local':
+                segment = 'LCL'
+            case 'argument':
+                segment = 'ARG'
+            case 'this':
+                segment = 'THIS'
+            case 'that':
+                segment = 'THAT'
+            case 'static':
+                # TODO
+                pass
+            case 'temp':
+                self.assign_sp_mem_to_d_val()
+                self.assign_d_val_to_mem(f'{variable + 5}')
+                return
+            case 'pointer':
+                segment = 'THIS'
 
+        if operation == 'push':
+            if variable_type.lower() == 'constant':
+                self.add_line(f'@{variable}')
+                self.add_line('D=A')
+                self.assign_d_val_to_mem('SP')
+                self.incr_pointer('SP')
+            else:
+                self.add_line(f'@{segment}')
+                self.add_line('A=M')
+                for _ in range(variable):
+                    self.add_line('A=A+1')
+                self.add_line('D=M')
+                self.assign_d_val_to_mem('SP')
+                self.incr_pointer('SP')
+
+        elif operation == 'pop':
+            # pop local 2
+            # @SP
+            # A=M
+            # D=M
+
+            # @LCL
+            # A=M
+            # A=A+2
+            # M=D
+
+            self.decr_pointer('SP')
+            self.assign_sp_mem_to_d_val()
+            self.add_line(f'@{segment}')
+            self.add_line('A=M')
+            for _ in range(variable):
+                self.add_line('A=A+1')
+
+            self.add_line('M=D')
+            # self.decr_pointer('SP')
 
     def handle_arithmetic(self, line, line_number):
         if line in ['neg', 'not']:
-            self.sp_minus_one()
+            self.decr_pointer('SP')
             self.assign_sp_mem_to_d_val()
             if line == 'neg':
                 self.add_line('M=-M')
             elif line == 'not':
                 self.add_line('M=!M')
-            self.sp_incr()
+            self.incr_pointer('SP')
             return
 
-        self.sp_minus_one()
+        self.decr_pointer('SP')
 
         self.assign_sp_mem_to_d_val()
 
-        self.sp_minus_one()
+        self.decr_pointer('SP')
 
         self.add_line('@SP')
         self.add_line('A=M')
@@ -106,7 +153,7 @@ class Writer:
 
             self.add_line('M=D')
 
-        self.sp_incr()
+        self.incr_pointer('SP')
 
     def mark_end(self):
         self.add_line('(END)')
@@ -114,22 +161,26 @@ class Writer:
         self.add_line('  0;JMP')
 
     def initialize_pointers(self):
-        self.add_line('@256')
-        self.add_line('D=A')
-        self.add_line('@SP')
-        self.add_line('M=D')
+        # no need to worry about this in chapter 7
+        pass
+        # self.add_line('@256')
+        # self.add_line('D=A')
+        # self.add_line('@SP')
+        # self.add_line('M=D')
+
+        # self.add_line('@')
 
     # common logics
-    def sp_incr(self):
-        self.add_line('@SP')
+    def incr_pointer(self, segment):
+        self.add_line('@{}'.format(segment))
         self.add_line('M=M+1')
 
-    def sp_minus_one(self):
-        self.add_line('@SP')
+    def decr_pointer(self, segment):
+        self.add_line('@{}'.format(segment))
         self.add_line('M=M-1')
 
-    def assign_d_val_to_sp_mem(self):
-        self.add_line('@SP')
+    def assign_d_val_to_mem(self, segment):
+        self.add_line('@{}'.format(segment))
         self.add_line('A=M')
         self.add_line('M=D')
 
@@ -147,4 +198,3 @@ class Writer:
         self.add_line('@SP')
         self.add_line('A=M')
         self.add_line('M=-1')
-
