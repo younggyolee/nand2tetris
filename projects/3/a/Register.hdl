@@ -13,66 +13,41 @@ CHIP Register {
     OUT out[16];
 
     PARTS:
-    Mux16(a=prevState, b=in, sel=load, out=curState);
+    Bit(in=in[0], load=load, out=out0);
+    Bit(in=in[1], load=load, out=out1);
+    Bit(in=in[2], load=load, out=out2);
+    Bit(in=in[3], load=load, out=out3);
+    Bit(in=in[4], load=load, out=out4);
+    Bit(in=in[5], load=load, out=out5);
+    Bit(in=in[6], load=load, out=out6);
+    Bit(in=in[7], load=load, out=out7);
+    Bit(in=in[8], load=load, out=out8);
+    Bit(in=in[9], load=load, out=out9);
+    Bit(in=in[10], load=load, out=out10);
+    Bit(in=in[11], load=load, out=out11);
+    Bit(in=in[12], load=load, out=out12);
+    Bit(in=in[13], load=load, out=out13);
+    Bit(in=in[14], load=load, out=out14);
+    Bit(in=in[15], load=load, out=out15);
 
     Or16(
-        a=curState,
-        b=false,
-        out[0]=curState0,
-        out[1]=curState1,
-        out[2]=curState2,
-        out[3]=curState3,
-        out[4]=curState4,
-        out[5]=curState5,
-        out[6]=curState6,
-        out[7]=curState7,
-        out[8]=curState8,
-        out[9]=curState9,
-        out[10]=curState10,
-        out[11]=curState11,
-        out[12]=curState12,
-        out[13]=curState13,
-        out[14]=curState14,
-        out[15]=curState15
+        a=false,
+        b[0]=out0,
+        b[1]=out1,
+        b[2]=out2,
+        b[3]=out3,
+        b[4]=out4,
+        b[5]=out5,
+        b[6]=out6,
+        b[7]=out7,
+        b[8]=out8,
+        b[9]=out9,
+        b[10]=out10,
+        b[11]=out11,
+        b[12]=out12,
+        b[13]=out13,
+        b[14]=out14,
+        b[15]=out15,
+        out=out
     );
-
-    DFF(in=curState0, out=prevState0);
-    DFF(in=curState1, out=prevState1);
-    DFF(in=curState2, out=prevState2);
-    DFF(in=curState3, out=prevState3);
-    DFF(in=curState4, out=prevState4);
-    DFF(in=curState5, out=prevState5);
-    DFF(in=curState6, out=prevState6);
-    DFF(in=curState7, out=prevState7);
-    DFF(in=curState8, out=prevState8);
-    DFF(in=curState9, out=prevState9);
-    DFF(in=curState10, out=prevState10);
-    DFF(in=curState11, out=prevState11);
-    DFF(in=curState12, out=prevState12);
-    DFF(in=curState13, out=prevState13);
-    DFF(in=curState14, out=prevState14);
-    DFF(in=curState15, out=prevState15);
-
-    Or16(
-        a[0]=prevState0,
-        a[1]=prevState1,
-        a[2]=prevState2,
-        a[3]=prevState3,
-        a[4]=prevState4,
-        a[5]=prevState5,
-        a[6]=prevState6,
-        a[7]=prevState7,
-        a[8]=prevState8,
-        a[9]=prevState9,
-        a[10]=prevState10,
-        a[11]=prevState11,
-        a[12]=prevState12,
-        a[13]=prevState13,
-        a[14]=prevState14,
-        a[15]=prevState15,
-        b=false,
-        out=prevState
-    );
-
-    Or16(a=prevState, b=false, out=out);
 }
