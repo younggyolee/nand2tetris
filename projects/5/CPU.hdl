@@ -72,7 +72,7 @@ CHIP CPU {
         h=dMuxH // unconditional jump
     );
 
-    // comp > 0  <=> ng == 0
+    // comp > 0  <=> ng == 0 AND zr == 0
     // comp == 0 <=> zr == 1
     // comp >= 0 <=> ng == 0 OR zr == 1
     // comp < 0  <=> ng == 1
@@ -81,7 +81,8 @@ CHIP CPU {
     And(a=dMuxA, b=false, out=jumpA);
 
     Not(in=ng, out=notNg);
-    And(a=dMuxB, b=notNg, out=jumpB);
+    And(a=notNg, b=notZr, out=compGreaterThanZero);
+    And(a=dMuxB, b=compGreaterThanZero, out=jumpB);
 
     And(a=dMuxC, b=zr, out=jumpC);
 
