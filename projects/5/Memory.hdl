@@ -41,7 +41,7 @@ CHIP Memory {
     DMux4Way(in=load, sel=address[13..14], a=dmuxRAM16K1, b=dmuxRAM16K2, c=dmuxScreen, d=dmuxKeyboard);
     Or(a=dmuxRAM16K1, b=dmuxRAM16K2, out=dmuxRAM16K);
 
-    RAM16K(in=in, load=dmuxRAM16K, address=address[0..13], out=RAM16K);
+    RAM16K(in=in, load=dmuxRAM16K, address=address[0..13], out=outRAM16K);
     Screen(in=in, load=dmuxScreen, address=address[0..12], out=outScreen);
     Keyboard(out=outKeyboard);
 
