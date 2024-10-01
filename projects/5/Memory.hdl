@@ -21,21 +21,35 @@
  * and Keyboard chip specifications given in the lectures and the book.
  */
 
-
-// if load(t) == 0
-//
-// out(t) = Memory[address](t)
-
-// elif load(t) == 1
-//
-// out(t) == Memory[address](t)
-// set Memory[address](t+1) = in(t)
-
 CHIP Memory {
     IN in[16], load, address[15];
     OUT out[16];
 
     PARTS:
+    // sol2)
+    // following Wonil's solution
+    // 0     (000000000000000) - 16383 (011111111111111) = RAM16K
+    // 16384 (100000000000000) - 24575 (101111111111111) = SCREEN
+    // 24576 (110000000000000)                           = KEYBOARD
+
+    // => most significant 2 bits
+    // RAM16K = 00 or 01
+    // SCREEN = 10
+    // KEYBOARD = 11
+
+    // dmux's output a,b,c,d means "load==1 && address"
+    DMux4Way(in=load, sel=address[13..14], a=dmuxRAM16K1, b=dmuxRAM16K2, c=dmuxScreen, d=dmuxKeyboard);
+    Or(a=dmuxRAM16K1, b=dmuxRAM16K2, out=dmuxRAM16K);
+
+    RAM16K(in=in, load=dmuxRAM16K, address=address[0..13], out=RAM16K);
+    Screen(in=in, load=dmuxScreen, address=address[0..12], out=outScreen);
+    Keyboard(out=outKeyboard);
+
+    Mux4Way16(a=outRAM16K, b=outRAM16K, c=outScreen, d=outKeyboard, sel=address[13..14], out=out);
+
+
+
+    // sol1)
     // if address < 0x4000 (=0100000000000000), then access memory
     // if address - 0x4000 < 0, ...
     And16(a[15]=false, a[14]=true, a[0..13]=false, b=true, out=screenBase);
