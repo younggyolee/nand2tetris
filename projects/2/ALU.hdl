@@ -73,11 +73,17 @@ CHIP ALU {
     // if (f == 0)  sets out = x & y  // bitwise and
     // if (no == 1) sets out = !out   // bitwise not
     Not16(in=fOut, out=notFOut);
-    Mux16(a=fOut, b=notFOut, sel=no, out=out);
+    Mux16(a=fOut, b=notFOut, sel=no, out=out, out[0..7]=outLow, out[8..15]=outHigh);
 
     // if (no == 1) sets out ng = !ng // bitwise not
     Not(in=ngZero, out=notNg);
     Mux(a=ngZero, b=notNg, sel=no, out=ng);
+
+    // (2024-10-01) more optimised way following Wonil's solution
+    Or8Way(in=outLow, out=outLowHasBit);
+    Or8Way(in=outHigh, out=outHighHasBit);
+    Or(a=outLowHasBit, b=outHighHasBit, out=outHasTrueBit);
+    Not(in=outHasTrueBit, out=zr);
 
     // if (no == 1) => out becomes !out =>check if out == 0 or not
 
@@ -89,17 +95,17 @@ CHIP ALU {
     // 1     not 0    101..1     0
     // 1     111..1   000..0     1
 
-    // when adding 1, is it all ones? (=is it all ones in the original?)
-    Inc16(in=fOut, out=fOutPlus1);
-    Or16(a=fOutPlus1, b=false, out[0..7]=fOrFalseZero, out[8..15]=fOrFalseOne);
-    Or8Way(in=fOrFalseZero, out=orFalseZero);
-    Or8Way(in=fOrFalseOne, out=orFalseOne);
-    Or(a=orFalseZero, b=orFalseOne, out=orFalseTwo);
-    Not(in=orFalseTwo, out=isAllOnes);
+    // // when adding 1, is it all ones? (=is it all ones in the original?)
+    // Inc16(in=fOut, out=fOutPlus1);
+    // Or16(a=fOutPlus1, b=false, out[0..7]=fOrFalseZero, out[8..15]=fOrFalseOne);
+    // Or8Way(in=fOrFalseZero, out=orFalseZero);
+    // Or8Way(in=fOrFalseOne, out=orFalseOne);
+    // Or(a=orFalseZero, b=orFalseOne, out=orFalseTwo);
+    // Not(in=orFalseTwo, out=isAllOnes);
 
-    // (no == 0 && is_all_zeroes == true) || (no == 1 && is_all_ones == true)
-    Not(in=no, out=notNo);
-    And(a=notNo, b=isAllZeroes, out=zrZero);
-    And(a=no, b=isAllOnes, out=zrOne);
-    Or(a=zrZero, b=zrOne, out=zr);
+    // // (no == 0 && is_all_zeroes == true) || (no == 1 && is_all_ones == true)
+    // Not(in=no, out=notNo);
+    // And(a=notNo, b=isAllZeroes, out=zrZero);
+    // And(a=no, b=isAllOnes, out=zrOne);
+    // Or(a=zrZero, b=zrOne, out=zr);
 }
