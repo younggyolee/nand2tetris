@@ -49,41 +49,41 @@ CHIP Memory {
 
 
 
-    // sol1)
-    // if address < 0x4000 (=0100000000000000), then access memory
-    // if address - 0x4000 < 0, ...
-    And16(a[15]=false, a[14]=true, a[0..13]=false, b=true, out=screenBase);
-    And16(a[0..14]=address, b=true, out=addressSixteenBits);
-    ALU(x=addressSixteenBits, y=screenBase, nx=true, f=true, no=true, out=addressMinusScreenBase, zr=xMinusYEqualsZero, ng=addressSmallerThanScreenBase);
-    And(a=addressSmallerThanScreenBase, b=true, out=isData);
-    And(a=load, b=isData, out=loadForData);
-    RAM16K(in=in, load=loadForData, address=address[0..13], out=dataOut);
+    // // sol1)
+    // // if address < 0x4000 (=0100000000000000), then access memory
+    // // if address - 0x4000 < 0, ...
+    // And16(a[15]=false, a[14]=true, a[0..13]=false, b=true, out=screenBase);
+    // And16(a[0..14]=address, b=true, out=addressSixteenBits);
+    // ALU(x=addressSixteenBits, y=screenBase, nx=true, f=true, no=true, out=addressMinusScreenBase, zr=xMinusYEqualsZero, ng=addressSmallerThanScreenBase);
+    // And(a=addressSmallerThanScreenBase, b=true, out=isData);
+    // And(a=load, b=isData, out=loadForData);
+    // RAM16K(in=in, load=loadForData, address=address[0..13], out=dataOut);
 
 
-	// if address == 0x6000 (=24576), then access keyboard
-    And16(a[15]=false, a[14]=true, a[13]=true, a[0..12]=false, b=true, out=keyboardBase);
-    ALU(x[0..14]=address, y=keyboardBase, nx=true, f=true, no=true, out=thirdAluOut, zr=isAddressKeyboard, ng=thirdAluNg);
-    Keyboard(out=keyboardOut);
+	// // if address == 0x6000 (=24576), then access keyboard
+    // And16(a[15]=false, a[14]=true, a[13]=true, a[0..12]=false, b=true, out=keyboardBase);
+    // ALU(x[0..14]=address, y=keyboardBase, nx=true, f=true, no=true, out=thirdAluOut, zr=isAddressKeyboard, ng=thirdAluNg);
+    // Keyboard(out=keyboardOut);
 
-    // I was doing ALU wrong. x - y should be `nx=true, f=true, no=true`, not `ny=true, f=true`.
-    // I should've read the API doc more carefully!!
+    // // I was doing ALU wrong. x - y should be `nx=true, f=true, no=true`, not `ny=true, f=true`.
+    // // I should've read the API doc more carefully!!
 
 
-    // if address is in the range 0x4000-0x5FFF, then access screen memory map
-    // when accessing the memory map, use address = address - 0x4000
-    Not(in=isData, out=isAddressNotData);
-    Not(in=isAddressKeyboard, out=isAddressNotKeyboard);
+    // // if address is in the range 0x4000-0x5FFF, then access screen memory map
+    // // when accessing the memory map, use address = address - 0x4000
+    // Not(in=isData, out=isAddressNotData);
+    // Not(in=isAddressKeyboard, out=isAddressNotKeyboard);
 
-    And(a=isAddressNotData, b=isAddressNotKeyboard, out=isScreen);
-    And(a=load, b=isScreen, out=loadForScreen);
-    And16(a=addressMinusScreenBase, b=true, out[0..12]=addressMinusScreenBaseThirteenBits);
-    Screen(in=in, load=loadForScreen, address=addressMinusScreenBaseThirteenBits, out=screenOut);
+    // And(a=isAddressNotData, b=isAddressNotKeyboard, out=isScreen);
+    // And(a=load, b=isScreen, out=loadForScreen);
+    // And16(a=addressMinusScreenBase, b=true, out[0..12]=addressMinusScreenBaseThirteenBits);
+    // Screen(in=in, load=loadForScreen, address=addressMinusScreenBaseThirteenBits, out=screenOut);
 
-    // choose what to return
-    Mux16(a=false, b=dataOut, sel=isData, out=out1);
-    Mux16(a=false, b=keyboardOut, sel=isAddressKeyboard, out=out2);
-    Mux16(a=false, b=screenOut, sel=isScreen, out=out3);
+    // // choose what to return
+    // Mux16(a=false, b=dataOut, sel=isData, out=out1);
+    // Mux16(a=false, b=keyboardOut, sel=isAddressKeyboard, out=out2);
+    // Mux16(a=false, b=screenOut, sel=isScreen, out=out3);
 
-    Or16(a=out1, b=out2, out=or1);
-    Or16(a=or1, b=out3, out=out);
+    // Or16(a=out1, b=out2, out=or1);
+    // Or16(a=or1, b=out3, out=out);
 }
